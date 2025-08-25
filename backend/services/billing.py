@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Depends, Request
 from typing import Optional, Dict, Tuple
 import stripe
 from datetime import datetime, timezone, timedelta
+from services.paypal_service import create_paypal_payment, get_tier_from_stripe_price_id
 
 from supabase import Client as SupabaseClient
 from utils.cache import Cache
@@ -1318,36 +1319,32 @@ async def create_checkout_session(
                 logger.exception(f"Error updating subscription {existing_subscription.get('id') if existing_subscription else 'N/A'}: {str(e)}")
                 raise HTTPException(status_code=500, detail=f"Error updating subscription: {str(e)}")
         else:
-            # Create regular subscription with commitment metadata if specified
-            session = await stripe.checkout.Session.create_async(
-                customer=customer_id,
-                payment_method_types=['card'],
-                line_items=[{'price': request.price_id, 'quantity': 1}],
-                mode='subscription',
-                subscription_data={
-                    'metadata': {
-                        'commitment_type': request.commitment_type or 'monthly',
-                        'user_id': current_user_id
-                    }
-                },
+            # Use PayPal instead of Stripe for new subscriptions
+            tier_id = get_tier_from_stripe_price_id(request.price_id)
+            if not tier_id:
+                raise HTTPException(status_code=400, detail=f"Unsupported price ID for PayPal: {request.price_id}")
+            
+            # Create PayPal payment
+            paypal_result = create_paypal_payment(
+                tier_id=tier_id,
                 success_url=request.success_url,
-                cancel_url=request.cancel_url,
-                metadata={
-                    'user_id': current_user_id,
-                    'product_id': product_id,
-                    'tolt_referral': request.tolt_referral,
-                    'commitment_type': request.commitment_type or 'monthly'
-                },
-                allow_promotion_codes=True
+                cancel_url=request.cancel_url
             )
             
-            # Update customer status to potentially active (will be confirmed by webhook)
+            if not paypal_result.get("success"):
+                raise HTTPException(status_code=500, detail=f"PayPal payment creation failed: {paypal_result.get('error')}")
+            
+            # Update customer status to potentially active (will be confirmed by PayPal webhook)
             await client.schema('basejump').from_('billing_customers').update(
                 {'active': True}
             ).eq('id', customer_id).execute()
-            logger.debug(f"Updated customer {customer_id} active status to TRUE after creating checkout session")
+            logger.debug(f"Updated customer {customer_id} active status to TRUE after creating PayPal payment")
             
-            return {"session_id": session['id'], "url": session['url'], "status": "new"}
+            return {
+                "session_id": paypal_result["payment_id"], 
+                "url": paypal_result["approval_url"], 
+                "status": "new"
+            }
         
     except Exception as e:
         logger.exception(f"Error creating checkout session: {str(e)}")

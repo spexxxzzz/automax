@@ -6,7 +6,7 @@ SUNA_CONFIG = {
     "description": "Suna is your AI assistant with access to various tools and integrations to help you with tasks across domains.",
     "avatar": "🌞",
     "avatar_color": "#F59E0B",
-    "model": "openrouter/moonshotai/kimi-k2",
+    "model": "gemini/gemini-2.5-flash",
     "system_prompt": SYSTEM_PROMPT,
     "configured_mcps": [],
     "custom_mcps": [],

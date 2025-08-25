@@ -271,6 +271,11 @@ class Configuration:
     
     # Stripe configuration
     STRIPE_SECRET_KEY: Optional[str] = None
+    
+    # PayPal Configuration
+    PAYPAL_CLIENT_ID: Optional[str] = None
+    PAYPAL_CLIENT_SECRET: Optional[str] = None
+    PAYPAL_MODE: str = "sandbox"  # or "live" for production
     STRIPE_WEBHOOK_SECRET: Optional[str] = None
     STRIPE_DEFAULT_PLAN_ID: Optional[str] = None
     STRIPE_DEFAULT_TRIAL_DAYS: int = 14

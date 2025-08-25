@@ -46,7 +46,7 @@ class AgentConfig:
     stream: bool
     native_max_auto_continues: int = 25
     max_iterations: int = 100
-    model_name: str = "openrouter/moonshotai/kimi-k2"
+    model_name: str = "gemini/gemini-2.5-flash"
     enable_thinking: Optional[bool] = False
     reasoning_effort: Optional[str] = 'low'
     enable_context_manager: bool = True
@@ -546,7 +546,7 @@ class AgentRunner:
             return 8192
         elif "gpt-4" in self.config.model_name.lower():
             return 4096
-        elif "gemini-2.5-pro" in self.config.model_name.lower():
+        elif "gemini-2.5-flash" in self.config.model_name.lower():
             return 64000
         elif "kimi-k2" in self.config.model_name.lower():
             return 8192
@@ -738,7 +738,7 @@ async def run_agent(
     thread_manager: Optional[ThreadManager] = None,
     native_max_auto_continues: int = 25,
     max_iterations: int = 100,
-    model_name: str = "openrouter/moonshotai/kimi-k2",
+    model_name: str = "gemini/gemini-2.5-flash",
     enable_thinking: Optional[bool] = False,
     reasoning_effort: Optional[str] = 'low',
     enable_context_manager: bool = True,
@@ -748,10 +748,10 @@ async def run_agent(
     target_agent_id: Optional[str] = None
 ):
     effective_model = model_name
-    if model_name == "openrouter/moonshotai/kimi-k2" and agent_config and agent_config.get('model'):
+    if model_name == "gemini/gemini-2.5-flash" and agent_config and agent_config.get('model'):
         effective_model = agent_config['model']
         logger.debug(f"Using model from agent config: {effective_model} (no user selection)")
-    elif model_name != "openrouter/moonshotai/kimi-k2":
+    elif model_name != "gemini/gemini-2.5-flash":
         logger.debug(f"Using user-selected model: {effective_model}")
     else:
         logger.debug(f"Using default model: {effective_model}")

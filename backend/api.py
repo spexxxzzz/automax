@@ -191,6 +191,10 @@ api_router.include_router(admin_api.router)
 from composio_integration import api as composio_api
 api_router.include_router(composio_api.router)
 
+# Temporarily disabled PayPal webhooks
+# from services import paypal_webhooks
+# api_router.include_router(paypal_webhooks.router, prefix="/billing")
+
 @api_router.get("/health")
 async def health_check():
     logger.debug("Health check endpoint called")
