@@ -1357,7 +1357,7 @@ export const siteConfig = {
       id: 'candidate-search',
       title: 'Looking for Candidates',
       description:
-        "Go on LinkedIn, and find 10 profiles available - they are not working right now - for a junior software engineer position, who are located in Munich, Germany. They should have at least one bachelor's degree in Computer Science or anything related to it, and 1-year of experience in any field/role.",
+        "Go on LinkedIn, and find 10 profiles available - they are not working right now - for a junior software engineer position, who are located in Munich, Germany. They should have at least one bachelor's degree in  Science or anything related to it, and 1-year of experience in any field/role.",
       category: 'recruitment',
       featured: true,
       icon: (

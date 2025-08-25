@@ -1,0 +1,47 @@
+# Production optimizations for Suna
+version: '3.8'
+
+services:
+  frontend:
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  backend:
+    environment:
+      - UVICORN_WORKERS=4
+      - WORKER_CONCURRENCY=8
+      - LOG_LEVEL=WARNING
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+  worker:
+    environment:
+      - DRAMATIQ_PROCESSES=4
+      - DRAMATIQ_THREADS=4
+      - LOG_LEVEL=WARNING
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+  redis:
+    command: redis-server --maxmemory 2gb --maxmemory-policy allkeys-lru --save 60 1000 --appendonly yes
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 1G

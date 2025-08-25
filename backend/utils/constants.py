@@ -63,8 +63,8 @@ MODELS = {
     },
     
     # Paid tier only models
-    "gemini/gemini-2.5-pro": {
-        "aliases": ["google/gemini-2.5-pro"],
+    "gemini/gemini-2.5-flash": {
+        "aliases": ["google/gemini-2.5-flash"],
         "pricing": {
             "input_cost_per_million_tokens": 1.25,
             "output_cost_per_million_tokens": 10.00

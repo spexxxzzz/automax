@@ -235,7 +235,7 @@ export function SidebarLeft({
                           }}
                           className="cursor-pointer pl-3 touch-manipulation"
                         >
-                          <span>New Agent</span>
+                          <span>AB Agent</span>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     </SidebarMenuSub>

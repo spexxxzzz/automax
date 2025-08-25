@@ -66,7 +66,7 @@ export const useCreateNewAgent = () => {
   return createMutationHook(
     async (_: void) => {
       const defaultAgentData = {
-        name: 'New Agent',
+        name: 'AB Agent',
         description: '',
         configured_mcps: [],
         agentpress_tools: DEFAULT_AGENTPRESS_TOOLS,
