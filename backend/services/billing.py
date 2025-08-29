@@ -1054,27 +1054,26 @@ async def create_checkout_session(
         if not user_result: raise HTTPException(status_code=404, detail="User not found")
         email = user_result.user.email
         
-        # Get or create Stripe customer
-        customer_id = await get_stripe_customer_id(client, current_user_id)
-        if not customer_id: customer_id = await create_stripe_customer(client, current_user_id, email)
-        
-        # Get the target price and product ID
-        try:
-            price = await stripe.Price.retrieve_async(request.price_id, expand=['product'])
-            product_id = price['product']['id']
-        except stripe.error.InvalidRequestError:
-            raise HTTPException(status_code=400, detail=f"Invalid price ID: {request.price_id}")
-            
-        # Verify the price belongs to our product
-        if product_id != config.STRIPE_PRODUCT_ID:
-            raise HTTPException(status_code=400, detail="Price ID does not belong to the correct product.")
-            
-        # Check for existing subscription for our product
+        # Check for existing subscription FIRST - this is the key change
         existing_subscription = await get_user_subscription(current_user_id)
-        # print("Existing subscription for product:", existing_subscription)
         
         if existing_subscription:
             # --- Handle Subscription Change (Upgrade or Downgrade) ---
+            # Get or create Stripe customer for existing subscriptions
+            customer_id = await get_stripe_customer_id(client, current_user_id)
+            if not customer_id: customer_id = await create_stripe_customer(client, current_user_id, email)
+            
+            # Get the target price and product ID for Stripe
+            try:
+                price = await stripe.Price.retrieve_async(request.price_id, expand=['product'])
+                product_id = price['product']['id']
+            except stripe.error.InvalidRequestError:
+                raise HTTPException(status_code=400, detail=f"Invalid price ID: {request.price_id}")
+                
+            # Verify the price belongs to our product
+            if product_id != config.STRIPE_PRODUCT_ID:
+                raise HTTPException(status_code=400, detail="Price ID does not belong to the correct product.")
+            
             try:
                 subscription_id = existing_subscription['id']
                 subscription_item = existing_subscription['items']['data'][0]
@@ -1319,6 +1318,11 @@ async def create_checkout_session(
                 logger.exception(f"Error updating subscription {existing_subscription.get('id') if existing_subscription else 'N/A'}: {str(e)}")
                 raise HTTPException(status_code=500, detail=f"Error updating subscription: {str(e)}")
         else:
+            # --- Handle NEW subscriptions with PayPal ---
+            # Get or create Stripe customer for new subscriptions (needed for database records)
+            customer_id = await get_stripe_customer_id(client, current_user_id)
+            if not customer_id: customer_id = await create_stripe_customer(client, current_user_id, email)
+            
             # Use PayPal instead of Stripe for new subscriptions
             tier_id = get_tier_from_stripe_price_id(request.price_id)
             if not tier_id:
