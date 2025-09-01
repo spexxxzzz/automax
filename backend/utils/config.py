@@ -275,7 +275,7 @@ class Configuration:
     # PayPal Configuration
     PAYPAL_CLIENT_ID: Optional[str] = None
     PAYPAL_CLIENT_SECRET: Optional[str] = None
-    PAYPAL_MODE: str = "sandbox"  # or "live" for production
+    PAYPAL_MODE: Optional[str] = None  # Will default to "sandbox" if not set
     STRIPE_WEBHOOK_SECRET: Optional[str] = None
     STRIPE_DEFAULT_PLAN_ID: Optional[str] = None
     STRIPE_DEFAULT_TRIAL_DAYS: int = 14
