@@ -1319,9 +1319,23 @@ async def create_checkout_session(
                 raise HTTPException(status_code=500, detail=f"Error updating subscription: {str(e)}")
         else:
             # --- Handle NEW subscriptions with PayPal ---
-            # Get or create Stripe customer for new subscriptions (needed for database records)
-            customer_id = await get_stripe_customer_id(client, current_user_id)
-            if not customer_id: customer_id = await create_stripe_customer(client, current_user_id, email)
+            # Create customer record directly in database (no Stripe needed)
+            try:
+                # Insert customer record directly
+                customer_result = await client.schema('basejump').from_('billing_customers').insert({
+                    'id': current_user_id,
+                    'email': email,
+                    'active': False,  # Will be activated when PayPal payment is confirmed
+                    'created_at': datetime.now(timezone.utc).isoformat(),
+                    'updated_at': datetime.now(timezone.utc).isoformat()
+                }).execute()
+                
+                customer_id = current_user_id
+                logger.debug(f"Created new customer record for PayPal subscription: {customer_id}")
+                
+            except Exception as e:
+                logger.warning(f"Could not create customer record: {str(e)}")
+                customer_id = current_user_id  # Use user_id as fallback
             
             # Use PayPal instead of Stripe for new subscriptions
             tier_id = get_tier_from_stripe_price_id(request.price_id)
@@ -1338,11 +1352,7 @@ async def create_checkout_session(
             if not paypal_result.get("success"):
                 raise HTTPException(status_code=500, detail=f"PayPal payment creation failed: {paypal_result.get('error')}")
             
-            # Update customer status to potentially active (will be confirmed by PayPal webhook)
-            await client.schema('basejump').from_('billing_customers').update(
-                {'active': True}
-            ).eq('id', customer_id).execute()
-            logger.debug(f"Updated customer {customer_id} active status to TRUE after creating PayPal payment")
+            logger.debug(f"Created PayPal payment for new subscription: {paypal_result['payment_id']}")
             
             return {
                 "session_id": paypal_result["payment_id"], 
