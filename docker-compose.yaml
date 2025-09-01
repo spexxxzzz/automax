@@ -30,9 +30,6 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=
       - REDIS_SSL=False
-      - PAYPAL_CLIENT_ID=AY5dD5QOqgRF2pp7JqjafPF-Can-LpacHS8S4ajtirTtZFni7EUV7JzGezY_DiWjb48RXbHSLxIZpgKl
-      - PAYPAL_CLIENT_SECRET=EBFmR9WCvkf30rni4Wg_5VxZt_8Kbm7cdDZ8bhiKIYt63bG3KxxnvmVNbtBxZIGWECIRxzdGtoaDrTbR
-      - PAYPAL_MODE=sandbox
     depends_on:
       redis:
         condition: service_healthy
