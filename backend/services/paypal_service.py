@@ -30,7 +30,7 @@ PAYPAL_SUBSCRIPTION_TIERS = {
     "tier_200_1000": {"name": "200h/$1000", "amount": 1000.00, "hours": 200},
 }
 
-def create_paypal_payment(tier_id: str, success_url: str, cancel_url: str) -> Dict[str, Any]:
+def create_paypal_payment(tier_id: str, success_url: str, cancel_url: str, user_id: str = None) -> Dict[str, Any]:
     """Create a PayPal payment for subscription tier"""
     try:
         if tier_id not in PAYPAL_SUBSCRIPTION_TIERS:
@@ -61,7 +61,8 @@ def create_paypal_payment(tier_id: str, success_url: str, cancel_url: str) -> Di
                     "total": str(tier['amount']),
                     "currency": "USD"
                 },
-                "description": f"Suna AI subscription - {tier['name']} ({tier['hours']} hours)"
+                "description": f"Suna AI subscription - {tier['name']} ({tier['hours']} hours)",
+                "custom": user_id  # Store user_id for later retrieval
             }]
         })
 

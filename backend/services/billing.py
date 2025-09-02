@@ -143,6 +143,15 @@ SUBSCRIPTION_TIERS = {
     config.STRIPE_TIER_2_17_YEARLY_COMMITMENT_ID: {'name': 'tier_2_17_yearly_commitment', 'minutes': 120, 'cost': 20 + 5},  # 2 hours/month, $17/month (12-month commitment)
     config.STRIPE_TIER_6_42_YEARLY_COMMITMENT_ID: {'name': 'tier_6_42_yearly_commitment', 'minutes': 360, 'cost': 50 + 5},  # 6 hours/month, $42.50/month (12-month commitment)
     config.STRIPE_TIER_25_170_YEARLY_COMMITMENT_ID: {'name': 'tier_25_170_yearly_commitment', 'minutes': 1500, 'cost': 200 + 5},  # 25 hours/month, $170/month (12-month commitment)
+    
+    # PayPal tiers (one-time payments for 30-day access)
+    'paypal_tier_2_20': {'name': 'tier_2_20', 'minutes': 120, 'cost': 20 + 5},  # 2 hours
+    'paypal_tier_6_50': {'name': 'tier_6_50', 'minutes': 360, 'cost': 50 + 5},  # 6 hours
+    'paypal_tier_12_100': {'name': 'tier_12_100', 'minutes': 720, 'cost': 100 + 5},  # 12 hours
+    'paypal_tier_25_200': {'name': 'tier_25_200', 'minutes': 1500, 'cost': 200 + 5},  # 25 hours
+    'paypal_tier_50_400': {'name': 'tier_50_400', 'minutes': 3000, 'cost': 400 + 5},  # 50 hours
+    'paypal_tier_125_800': {'name': 'tier_125_800', 'minutes': 7500, 'cost': 800 + 5},  # 125 hours
+    'paypal_tier_200_1000': {'name': 'tier_200_1000', 'minutes': 12000, 'cost': 1000 + 5},  # 200 hours
 }
 
 # Pydantic models for request/response validation
@@ -280,15 +289,43 @@ async def create_stripe_customer(client, user_id: str, email: str) -> str:
     return customer.id
 
 async def get_user_subscription(user_id: str) -> Optional[Dict]:
-    """Get the current subscription for a user from Stripe."""
+    """Get the current subscription for a user from Stripe or PayPal."""
     try:
         result = await Cache.get(f"user_subscription:{user_id}")
         if result:
             return result
 
-        # Get customer ID
+        # Get database connection
         db = DBConnection()
         client = await db.client
+        
+        # First check for PayPal subscriptions in our database
+        paypal_subscription = await client.schema('basejump').from_('billing_subscriptions').select('*').eq('account_id', user_id).eq('provider', 'paypal').eq('status', 'active').execute()
+        
+        if paypal_subscription.data:
+            # Return PayPal subscription in Stripe-compatible format
+            paypal_sub = paypal_subscription.data[0]
+            result = {
+                'id': paypal_sub['id'],
+                'status': paypal_sub['status'],
+                'price_id': paypal_sub['price_id'],
+                'plan': {'nickname': paypal_sub['plan_name']},
+                'cancel_at_period_end': paypal_sub['cancel_at_period_end'],
+                'current_period_end': paypal_sub['current_period_end'],
+                'provider': 'paypal',
+                'items': {
+                    'data': [{
+                        'price': {
+                            'id': paypal_sub['price_id']
+                        },
+                        'current_period_end': paypal_sub['current_period_end']
+                    }]
+                }
+            }
+            await Cache.set(f"user_subscription:{user_id}", result, ttl=1 * 60)
+            return result
+        
+        # If no PayPal subscription, check Stripe
         customer_id = await get_stripe_customer_id(client, user_id)
         
         if not customer_id:
@@ -1346,7 +1383,8 @@ async def create_checkout_session(
             paypal_result = create_paypal_payment(
                 tier_id=tier_id,
                 success_url=request.success_url,
-                cancel_url=request.cancel_url
+                cancel_url=request.cancel_url,
+                user_id=current_user_id
             )
             
             if not paypal_result.get("success"):
