@@ -3,7 +3,7 @@ PayPal webhook handler for payment confirmations
 """
 
 from fastapi import APIRouter, Request, HTTPException
-from services.paypal_service import execute_paypal_payment, get_tier_from_stripe_price_id, PAYPAL_SUBSCRIPTION_TIERS
+from services.paypal_service import execute_paypal_payment, PAYPAL_SUBSCRIPTION_TIERS
 from utils.logger import logger
 from services.supabase import DBConnection
 from datetime import datetime, timezone, timedelta
@@ -92,10 +92,20 @@ async def upgrade_user_after_paypal_payment(payment_id: str):
         db = DBConnection()
         client = await db.client
         
+        # Get account_id from user_id
+        account_result = await client.schema('basejump').from_('accounts').select('id').eq('primary_owner_user_id', user_id).eq('personal_account', True).limit(1).execute()
+        
+        if not account_result.data:
+            logger.error(f"No account found for user_id: {user_id}")
+            return
+            
+        account_id = account_result.data[0]['id']
+        logger.info(f"Found account_id {account_id} for user_id {user_id}")
+        
         # Create or update billing customer
         customer_data = {
-            'id': user_id,
-            'account_id': user_id,
+            'id': user_id,  # Use user_id as customer ID for PayPal
+            'account_id': account_id,  # Use proper account_id
             'email': payment.payer.get("payer_info", {}).get("email", ""),
             'active': True,
             'provider': 'paypal'
@@ -117,8 +127,8 @@ async def upgrade_user_after_paypal_payment(payment_id: str):
         now = datetime.now(timezone.utc)
         subscription_data = {
             'id': f"paypal_{payment_id}",
-            'account_id': user_id,
-            'billing_customer_id': user_id,
+            'account_id': account_id,  # Use proper account_id
+            'billing_customer_id': user_id,  # References billing_customers.id
             'status': 'active',
             'price_id': f"paypal_{tier_id}",
             'plan_name': tier_info['name'],

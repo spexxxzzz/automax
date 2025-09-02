@@ -300,9 +300,16 @@ async def get_user_subscription(user_id: str) -> Optional[Dict]:
         client = await db.client
         
         # First check for PayPal subscriptions in our database
-        paypal_subscription = await client.schema('basejump').from_('billing_subscriptions').select('*').eq('account_id', user_id).eq('provider', 'paypal').eq('status', 'active').execute()
+        # Need to get account_id from user_id first
+        account_result = await client.schema('basejump').from_('accounts').select('id').eq('primary_owner_user_id', user_id).eq('personal_account', True).limit(1).execute()
         
-        if paypal_subscription.data:
+        if account_result.data:
+            account_id = account_result.data[0]['id']
+            paypal_subscription = await client.schema('basejump').from_('billing_subscriptions').select('*').eq('account_id', account_id).eq('provider', 'paypal').eq('status', 'active').execute()
+        else:
+            paypal_subscription = None
+        
+        if paypal_subscription and paypal_subscription.data:
             # Return PayPal subscription in Stripe-compatible format
             paypal_sub = paypal_subscription.data[0]
             result = {
