@@ -125,6 +125,7 @@ def execute_paypal_payment(payment_id: str, payer_id: str) -> Dict[str, Any]:
 def get_tier_from_stripe_price_id(stripe_price_id: str) -> Optional[str]:
     """Map Stripe price IDs to PayPal tier IDs"""
     stripe_to_paypal_mapping = {
+        # Monthly subscriptions
         config.STRIPE_TIER_2_20_ID: "tier_2_20",
         config.STRIPE_TIER_6_50_ID: "tier_6_50", 
         config.STRIPE_TIER_12_100_ID: "tier_12_100",
@@ -132,6 +133,18 @@ def get_tier_from_stripe_price_id(stripe_price_id: str) -> Optional[str]:
         config.STRIPE_TIER_50_400_ID: "tier_50_400",
         config.STRIPE_TIER_125_800_ID: "tier_125_800",
         config.STRIPE_TIER_200_1000_ID: "tier_200_1000",
+        
+        # Yearly subscriptions
+        config.STRIPE_TIER_2_17_YEARLY_COMMITMENT_ID: "tier_2_20",
+        config.STRIPE_TIER_6_42_YEARLY_COMMITMENT_ID: "tier_6_50",
+        config.STRIPE_TIER_25_170_YEARLY_COMMITMENT_ID: "tier_25_200",
+        config.STRIPE_TIER_2_20_YEARLY_ID: "tier_2_20",
+        config.STRIPE_TIER_6_50_YEARLY_ID: "tier_6_50",
+        config.STRIPE_TIER_12_100_YEARLY_ID: "tier_12_100",
+        config.STRIPE_TIER_25_200_YEARLY_ID: "tier_25_200",
+        config.STRIPE_TIER_50_400_YEARLY_ID: "tier_50_400",
+        config.STRIPE_TIER_125_800_YEARLY_ID: "tier_125_800",
+        config.STRIPE_TIER_200_1000_YEARLY_ID: "tier_200_1000",
     }
     
     return stripe_to_paypal_mapping.get(stripe_price_id)
