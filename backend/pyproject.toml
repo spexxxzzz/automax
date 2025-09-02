@@ -45,7 +45,7 @@ dependencies = [
   "pytesseract==0.3.13",
   "stripe==11.6.0",
   "paypalrestsdk==1.13.1",
-  "pydantic==2.10.6",
+  "pydantic==2.11.7",
   "cryptography==43.0.3",
   "dramatiq==1.18.0",
   "prometheus-client==0.21.1",
