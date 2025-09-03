@@ -51,7 +51,7 @@ const PROD_TIERS: SubscriptionTiers = {
   },
   TIER_2_20: {
     priceId: 'price_1RILb4G6l1KZGqIrhomjgDnO',
-    name: '2h/$20',
+    name: '2h/$1',  // TEMPORARY: Changed from $20 to $1 for testing
   },
   TIER_6_50: {
     priceId: 'price_1RILb4G6l1KZGqIr5q0sybWn',
@@ -129,7 +129,7 @@ const STAGING_TIERS: SubscriptionTiers = {
   },
   TIER_2_20: {
     priceId: 'price_1RIGvuG6l1KZGqIrCRu0E4Gi',
-    name: '2h/$20',
+    name: '2h/$1',  // TEMPORARY: Changed from $20 to $1 for testing
   },
   TIER_6_50: {
     priceId: 'price_1RIGvuG6l1KZGqIrvjlz5p5V',
@@ -297,7 +297,7 @@ export const isYearlyPlan = (priceId: string): boolean => {
 // Tier level mappings for all plan types
 const PLAN_TIERS = {
   // Monthly plans
-  [PROD_TIERS.TIER_2_20.priceId]: { tier: 1, type: 'monthly', name: '2h/$20' },
+  [PROD_TIERS.TIER_2_20.priceId]: { tier: 1, type: 'monthly', name: '2h/$1' },  // TEMPORARY: Changed from $20 to $1 for testing
   [PROD_TIERS.TIER_6_50.priceId]: { tier: 2, type: 'monthly', name: '6h/$50' },
   [PROD_TIERS.TIER_12_100.priceId]: { tier: 3, type: 'monthly', name: '12h/$100' },
   [PROD_TIERS.TIER_25_200.priceId]: { tier: 4, type: 'monthly', name: '25h/$200' },
@@ -320,7 +320,7 @@ const PLAN_TIERS = {
   [PROD_TIERS.TIER_25_170_YEARLY_COMMITMENT.priceId]: { tier: 4, type: 'yearly_commitment', name: '25h/$170/month' },
 
   // Staging plans
-  [STAGING_TIERS.TIER_2_20.priceId]: { tier: 1, type: 'monthly', name: '2h/$20' },
+  [STAGING_TIERS.TIER_2_20.priceId]: { tier: 1, type: 'monthly', name: '2h/$1' },  // TEMPORARY: Changed from $20 to $1 for testing
   [STAGING_TIERS.TIER_6_50.priceId]: { tier: 2, type: 'monthly', name: '6h/$50' },
   [STAGING_TIERS.TIER_12_100.priceId]: { tier: 3, type: 'monthly', name: '12h/$100' },
   [STAGING_TIERS.TIER_25_200.priceId]: { tier: 4, type: 'monthly', name: '25h/$200' },

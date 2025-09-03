@@ -21,7 +21,7 @@ paypalrestsdk.configure({
 
 # Subscription tier pricing (same as Stripe tiers)
 PAYPAL_SUBSCRIPTION_TIERS = {
-    "tier_2_20": {"name": "2h/$20", "amount": 20.00, "hours": 2},
+    "tier_2_20": {"name": "2h/$1", "amount": 1.00, "hours": 2},  # TEMPORARY: Changed from $20 to $1 for testing
     "tier_6_50": {"name": "6h/$50", "amount": 50.00, "hours": 6},
     "tier_12_100": {"name": "12h/$100", "amount": 100.00, "hours": 12},
     "tier_25_200": {"name": "25h/$200", "amount": 200.00, "hours": 25},
