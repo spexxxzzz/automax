@@ -72,6 +72,15 @@ MODELS = {
         "context_window": 2_000_000,  # 2M tokens
         "tier_availability": ["free", "paid"]
     },
+    "gemini/gemini-2.5-pro": {
+        "aliases": ["google/gemini-2.5-pro", "gemini-2.5-pro"],
+        "pricing": {
+            "input_cost_per_million_tokens": 2.50,
+            "output_cost_per_million_tokens": 10.00
+        },
+        "context_window": 2_000_000,  # 2M tokens
+        "tier_availability": ["free", "paid"]
+    },
     
     # Paid tier only models
     # "openai/gpt-4o": {
