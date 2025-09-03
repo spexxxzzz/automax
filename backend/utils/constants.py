@@ -1,6 +1,6 @@
 # Master model configuration - single source of truth
 MODELS = {
-    # Free tier models
+    # Paid tier models
 
     "anthropic/claude-sonnet-4-20250514": {
         "aliases": ["claude-sonnet-4"],
@@ -50,7 +50,7 @@ MODELS = {
             "output_cost_per_million_tokens": 3.00
         },
         "context_window": 200_000,  # 200k tokens
-        "tier_availability": ["free", "paid"]
+        "tier_availability": ["paid"]
     },
     "xai/grok-4": {
         "aliases": ["grok-4", "x-ai/grok-4"],
@@ -62,7 +62,7 @@ MODELS = {
         "tier_availability": ["paid"]
     },
     
-    # Paid tier only models
+    # Free and paid tier models
     "gemini/gemini-2.5-flash": {
         "aliases": ["google/gemini-2.5-flash"],
         "pricing": {
@@ -70,8 +70,10 @@ MODELS = {
             "output_cost_per_million_tokens": 10.00
         },
         "context_window": 2_000_000,  # 2M tokens
-        "tier_availability": ["paid"]
+        "tier_availability": ["free", "paid"]
     },
+    
+    # Paid tier only models
     # "openai/gpt-4o": {
     #     "aliases": ["gpt-4o"],
     #     "pricing": {
