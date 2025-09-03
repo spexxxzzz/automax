@@ -37,6 +37,9 @@ def setup_api_keys() -> None:
             logger.debug(f"API key set for provider: {provider}")
         else:
             logger.warning(f"No API key found for provider: {provider}")
+    
+    # Set up Vertex AI credentials
+    setup_vertex_ai()
 
     # Set up OpenRouter API base if not already set
     if config.OPENROUTER_API_KEY and config.OPENROUTER_API_BASE:
@@ -56,6 +59,24 @@ def setup_api_keys() -> None:
         os.environ['AWS_REGION_NAME'] = aws_region
     else:
         logger.warning(f"Missing AWS credentials for Bedrock integration - access_key: {bool(aws_access_key)}, secret_key: {bool(aws_secret_key)}, region: {aws_region}")
+
+def setup_vertex_ai() -> None:
+    """Set up Vertex AI credentials and configuration."""
+    project_id = config.GOOGLE_CLOUD_PROJECT_ID
+    location = config.VERTEX_AI_LOCATION
+    
+    if project_id:
+        # Set environment variables for LiteLLM Vertex AI integration
+        os.environ['VERTEX_PROJECT'] = project_id
+        os.environ['VERTEX_LOCATION'] = location
+        
+        # Set Google Application Credentials if provided
+        if config.GOOGLE_APPLICATION_CREDENTIALS:
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = config.GOOGLE_APPLICATION_CREDENTIALS
+        
+        logger.debug(f"Vertex AI configured for project: {project_id}, location: {location}")
+    else:
+        logger.warning("No Google Cloud Project ID found for Vertex AI integration")
 
 def get_openrouter_fallback(model_name: str) -> Optional[str]:
     """Get OpenRouter fallback model for a given model name."""
@@ -173,6 +194,19 @@ def _configure_bedrock(params: Dict[str, Any], model_name: str, model_id: Option
         params["model_id"] = "arn:aws:bedrock:us-west-2:935064898258:inference-profile/us.anthropic.claude-3-7-sonnet-20250219-v1:0"
         logger.debug(f"Auto-set model_id for Claude 3.7 Sonnet: {params['model_id']}")
 
+def _configure_vertex_ai(params: Dict[str, Any], model_name: str) -> None:
+    """Configure Vertex AI-specific parameters."""
+    if not model_name.startswith("vertex_ai/"):
+        return
+    
+    logger.debug(f"Preparing Vertex AI parameters for model: {model_name}")
+    
+    # Set Vertex AI project and location
+    params['vertex_project'] = config.GOOGLE_CLOUD_PROJECT_ID
+    params['vertex_location'] = config.VERTEX_AI_LOCATION
+    
+    logger.debug(f"Set Vertex AI project: {config.GOOGLE_CLOUD_PROJECT_ID}, location: {config.VERTEX_AI_LOCATION}")
+
 def _configure_openai_gpt5(params: Dict[str, Any], model_name: str) -> None:
     """Configure OpenAI GPT-5 specific parameters."""
     if "gpt-5" not in model_name:
@@ -286,6 +320,8 @@ def prepare_params(
     _configure_openrouter(params, model_name)
     # Add Bedrock-specific parameters
     _configure_bedrock(params, model_name, model_id)
+    # Add Vertex AI-specific parameters
+    _configure_vertex_ai(params, model_name)
     
     _add_fallback_model(params, model_name, messages)
     # Add OpenAI GPT-5 specific parameters

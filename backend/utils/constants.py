@@ -82,6 +82,35 @@ MODELS = {
         "tier_availability": ["free", "paid"]
     },
     
+    # Vertex AI models - Claude Sonnet via Google Cloud
+    "vertex_ai/claude-3-5-sonnet-v2@20241022": {
+        "aliases": ["claude-sonnet-3.5-v2", "claude-vertex", "vertex-claude-sonnet"],
+        "pricing": {
+            "input_cost_per_million_tokens": 3.00,
+            "output_cost_per_million_tokens": 15.00
+        },
+        "context_window": 200_000,  # 200k tokens
+        "tier_availability": ["paid"]  # Start with paid tier
+    },
+    "vertex_ai/claude-3-5-haiku@20241022": {
+        "aliases": ["claude-haiku-3.5", "claude-vertex-haiku", "vertex-claude-haiku"],
+        "pricing": {
+            "input_cost_per_million_tokens": 0.25,
+            "output_cost_per_million_tokens": 1.25
+        },
+        "context_window": 200_000,  # 200k tokens
+        "tier_availability": ["free", "paid"]  # Affordable enough for free tier
+    },
+    "vertex_ai/gemini-2.5-flash-001": {
+        "aliases": ["gemini-flash-vertex", "vertex-gemini-flash"],
+        "pricing": {
+            "input_cost_per_million_tokens": 0.075,  # Vertex AI pricing (cheaper)
+            "output_cost_per_million_tokens": 0.30
+        },
+        "context_window": 2_000_000,  # 2M tokens
+        "tier_availability": ["free", "paid"]
+    },
+    
     # Paid tier only models
     # "openai/gpt-4o": {
     #     "aliases": ["gpt-4o"],

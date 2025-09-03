@@ -244,6 +244,10 @@ class Configuration:
     AWS_SECRET_ACCESS_KEY: Optional[str] = None
     AWS_REGION_NAME: Optional[str] = None
     
+    # Google Cloud / Vertex AI credentials
+    GOOGLE_CLOUD_PROJECT_ID: Optional[str] = None
+    VERTEX_AI_LOCATION: str = "us-central1"
+    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = None
 
     
     # Supabase configuration
