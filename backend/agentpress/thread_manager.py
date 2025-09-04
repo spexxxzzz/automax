@@ -320,6 +320,14 @@ class ThreadManager:
         logger.debug(f"Parameters: model={llm_model}, temperature={llm_temperature}, max_tokens={llm_max_tokens}")
         logger.debug(f"Auto-continue: max={native_max_auto_continues}, XML tool limit={max_xml_tool_calls}")
 
+        # Resolve model alias to full model name
+        from utils.constants import MODEL_NAME_ALIASES
+        original_llm_model = llm_model
+        llm_model = MODEL_NAME_ALIASES.get(llm_model, llm_model)
+        
+        if original_llm_model != llm_model:
+            logger.debug(f"Thread {thread_id}: Resolved model alias: {original_llm_model} -> {llm_model}")
+
         # Log model info
         logger.debug(f"🤖 Thread {thread_id}: Using model {llm_model}")
 
@@ -496,6 +504,7 @@ When using the tools:
                             }
                         )
 
+                    logger.debug(f"Thread {thread_id}: Preparing to make LLM API call with model: {llm_model}")
                     llm_response = await make_llm_api_call(
                         prepared_messages, # Pass the potentially modified messages
                         llm_model,
