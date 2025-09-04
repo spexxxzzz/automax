@@ -341,6 +341,39 @@ class ThreadManager:
 
         # Create a working copy of the system prompt to potentially modify
         working_system_prompt = system_prompt.copy()
+        
+        # Check if we need to truncate system prompt for smaller context models
+        from utils.constants import get_model_context_window
+        context_window = get_model_context_window(llm_model)
+        
+        # For models with smaller context windows (like Mistral Large), truncate the system prompt
+        if context_window < 200_000:  # Less than 200K tokens
+            system_content = working_system_prompt.get('content', '')
+            if isinstance(system_content, str) and len(system_content) > 50_000:
+                # Truncate to first 50K characters and add notice
+                truncated_content = system_content[:50_000] + "\n\n[System prompt truncated for model compatibility]"
+                working_system_prompt['content'] = truncated_content
+                logger.debug(f"Truncated system prompt from {len(system_content)} to {len(truncated_content)} characters for model {llm_model} (context: {context_window:,} tokens)")
+            elif isinstance(system_content, list):
+                # Handle list-type system content by truncating text blocks
+                total_chars = sum(len(str(item.get('text', ''))) if isinstance(item, dict) else len(str(item)) for item in system_content)
+                if total_chars > 50_000:
+                    # Keep first few items and truncate
+                    truncated_content = []
+                    char_count = 0
+                    for item in system_content:
+                        if isinstance(item, dict) and 'text' in item:
+                            text_len = len(item['text'])
+                            if char_count + text_len > 50_000:
+                                item['text'] = item['text'][:max(0, 50_000 - char_count)] + "\n[Truncated for model compatibility]"
+                                truncated_content.append(item)
+                                break
+                            truncated_content.append(item)
+                            char_count += text_len
+                        else:
+                            truncated_content.append(item)
+                    working_system_prompt['content'] = truncated_content
+                    logger.debug(f"Truncated list system prompt from {total_chars} to ~50K characters for model {llm_model}")
 
         # Add XML tool calling instructions to system prompt if requested
         if include_xml_examples and config.xml_tool_calling:
