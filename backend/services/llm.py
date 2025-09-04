@@ -374,12 +374,20 @@ async def make_llm_api_call(
         LLMRetryError: If API call fails after retries
         LLMError: For other API-related errors
     """
+    # Resolve model alias to full model name
+    from utils.constants import MODEL_NAME_ALIASES
+    original_model_name = model_name
+    resolved_model_name = MODEL_NAME_ALIASES.get(model_name, model_name)
+    
+    if original_model_name != resolved_model_name:
+        logger.debug(f"Resolved model alias: {original_model_name} -> {resolved_model_name}")
+    
     # debug <timestamp>.json messages
-    logger.debug(f"Making LLM API call to model: {model_name} (Thinking: {enable_thinking}, Effort: {reasoning_effort})")
-    logger.debug(f"📡 API Call: Using model {model_name}")
+    logger.debug(f"Making LLM API call to model: {resolved_model_name} (Thinking: {enable_thinking}, Effort: {reasoning_effort})")
+    logger.debug(f"📡 API Call: Using model {resolved_model_name}")
     params = prepare_params(
         messages=messages,
-        model_name=model_name,
+        model_name=resolved_model_name,
         temperature=temperature,
         max_tokens=max_tokens,
         response_format=response_format,
