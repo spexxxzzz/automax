@@ -230,7 +230,8 @@ class ThreadManager:
             offset = 0
             
             while True:
-                result = await client.table('messages').select('message_id, content').eq('thread_id', thread_id).eq('is_llm_message', True).order('created_at').range(offset, offset + batch_size - 1).execute()
+                # Include user and assistant messages regardless of is_llm_message flag
+                result = await client.table('messages').select('message_id, content').eq('thread_id', thread_id).in_('type', ['user', 'assistant', 'tool']).order('created_at').range(offset, offset + batch_size - 1).execute()
                 
                 if not result.data or len(result.data) == 0:
                     break
