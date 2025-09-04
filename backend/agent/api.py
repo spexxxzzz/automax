@@ -935,13 +935,17 @@ async def generate_and_update_project_name(project_id: str, prompt: str):
 
         generated_name = None
         if response and response.get('choices') and response['choices'][0].get('message'):
-            raw_name = response['choices'][0]['message'].get('content', '').strip()
-            cleaned_name = raw_name.strip('\'" \n\t')
-            if cleaned_name:
-                generated_name = cleaned_name
-                logger.debug(f"LLM generated name for project {project_id}: '{generated_name}'")
+            content = response['choices'][0]['message'].get('content')
+            if content is not None:
+                raw_name = content.strip()
+                cleaned_name = raw_name.strip('\'" \n\t')
+                if cleaned_name:
+                    generated_name = cleaned_name
+                    logger.debug(f"LLM generated name for project {project_id}: '{generated_name}'")
+                else:
+                    logger.warning(f"LLM returned an empty name for project {project_id}.")
             else:
-                logger.warning(f"LLM returned an empty name for project {project_id}.")
+                logger.warning(f"LLM returned None content for project {project_id} naming.")
         else:
             logger.warning(f"Failed to get valid response from LLM for project {project_id} naming. Response: {response}")
 

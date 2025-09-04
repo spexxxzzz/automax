@@ -21,8 +21,9 @@ from utils.constants import MODEL_ACCESS_TIERS, MODEL_NAME_ALIASES, HARDCODED_MO
 from litellm.cost_calculator import cost_per_token
 import time
 
-# Initialize Stripe
-stripe.api_key = config.STRIPE_SECRET_KEY
+# Initialize Stripe only if billing is enabled
+if config.BILLING_ENABLED and config.STRIPE_SECRET_KEY:
+    stripe.api_key = config.STRIPE_SECRET_KEY
 
 # Token price multiplier
 TOKEN_PRICE_MULTIPLIER = 1.5
@@ -290,6 +291,10 @@ async def create_stripe_customer(client, user_id: str, email: str) -> str:
 
 async def get_user_subscription(user_id: str) -> Optional[Dict]:
     """Get the current subscription for a user from Stripe or PayPal."""
+    # If billing is disabled, return None (free tier)
+    if not config.BILLING_ENABLED:
+        return None
+    
     try:
         result = await Cache.get(f"user_subscription:{user_id}")
         if result:
@@ -724,6 +729,10 @@ async def can_use_model(client, user_id: str, model_name: str):
     return False, f"Your current subscription plan does not include access to {model_name}. Please upgrade your subscription or choose from your available models: {', '.join(allowed_models)}", allowed_models
 
 async def get_subscription_tier(client, user_id: str) -> str:
+    # If billing is disabled, always return free tier
+    if not config.BILLING_ENABLED:
+        return 'free'
+    
     try:
         subscription = await get_user_subscription(user_id)
         
