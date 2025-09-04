@@ -57,6 +57,12 @@ export const MODELS = {
     recommended: true,
     lowQuality: false
   },
+  'mistral-large': { 
+    tier: 'free', 
+    priority: 95,
+    recommended: true,
+    lowQuality: false
+  },
   'grok-4': { 
     tier: 'premium', 
     priority: 94,

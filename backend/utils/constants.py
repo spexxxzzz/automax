@@ -110,6 +110,15 @@ MODELS = {
         "context_window": 2_000_000,  # 2M tokens
         "tier_availability": ["free", "paid"]
     },
+    "vertex_ai/mistral-large-2411": {
+        "aliases": ["mistral-large", "mistral-vertex", "vertex-mistral-large"],
+        "pricing": {
+            "input_cost_per_million_tokens": 2.00,  # Estimated Mistral Large pricing
+            "output_cost_per_million_tokens": 6.00
+        },
+        "context_window": 128_000,  # 128k tokens
+        "tier_availability": ["free", "paid"]  # Available in free tier
+    },
     
     # Paid tier only models
     # "openai/gpt-4o": {
@@ -287,6 +296,8 @@ def get_model_context_window(model_name: str, default: int = 31_000) -> int:
         return 2_000_000  # Gemini models
     elif 'grok' in model_name.lower():
         return 128_000  # Grok models
+    elif 'mistral' in model_name.lower():
+        return 128_000  # Mistral models
     elif 'gpt' in model_name.lower():
         return 128_000  # GPT-4 and variants
     elif 'deepseek' in model_name.lower():
