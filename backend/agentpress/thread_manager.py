@@ -251,19 +251,19 @@ class ThreadManager:
             if not result_data:
                 return []
 
-            # Return properly parsed JSON objects
+            # Return properly parsed JSON objects, excluding message_id to avoid LLM API issues
             messages = []
             for item in result_data:
                 if isinstance(item['content'], str):
                     try:
                         parsed_item = json.loads(item['content'])
-                        parsed_item['message_id'] = item['message_id']
+                        # Don't add message_id - it causes issues with some LLM providers like Mistral
                         messages.append(parsed_item)
                     except json.JSONDecodeError:
                         logger.error(f"Failed to parse message: {item['content']}")
                 else:
-                    content = item['content']
-                    content['message_id'] = item['message_id']
+                    content = item['content'].copy()  # Make a copy to avoid modifying original
+                    # Don't add message_id - it causes issues with some LLM providers like Mistral
                     messages.append(content)
 
             return messages
